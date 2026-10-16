@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cozy Corner Books | Book Collection</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="site-header">
+        <img src="img/Logo.jpeg" alt="Cozy Corner Books logo" class="logo">
+        <div class="header-text">
+            <span class="eyebrow">Independent Bookstore</span>
+            <h1>Books</h1>
+            <p>Discover stories, search our online catalog, and explore recommendations.</p>
+        </div>
+    </header>
+
+    <nav class="main-nav" aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="about.html">About Us</a>
+        <a href="books.html" class="active">Books</a>
+        <a href="genres.html">Genres</a>
+        <a href="classes.html">Classes</a>
+        <a href="contact.html">Contact Us</a>
+    </nav>
+
+    <main>
+        <section class="content-panel">
+            <h2>Find Your Next Read</h2>
+            <p>Search through millions of books in our connected online library database. Click any book to slide open its full details and description!</p>
+
+            <!-- Search Bar Form -->
+            <div class="search-container">
+                <label for="bookSearchInput" class="search-label">Search Catalog</label>
+                <div class="search-bar-wrapper">
+                    <input type="search" id="bookSearchInput" class="book-search-input" placeholder="Search by title, author, or subject (e.g., Dune, Tolkien)..." aria-label="Search books">
+                    <button type="button" id="searchBtn" class="button-link search-submit-btn">Search</button>
+                </div>
+            </div>
+
+            <!-- Dynamic Search Results Grid -->
+            <div class="card-grid" id="searchResultsGrid">
+                <!-- Live search results populate here -->
+            </div>
+
+            <!-- Pagination Load More Container -->
+            <div class="load-more-container" style="text-align: center; margin-top: 28px;">
+                <button id="loadMoreBtn" class="button-link" style="display: none;">Load More Books</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Side Drawer Overlay and Panel -->
+    <div id="drawerOverlay" class="drawer-overlay"></div>
+    <aside id="bookDrawer" class="book-drawer" aria-label="Book Details">
+        <button id="closeDrawerBtn" class="drawer-close-btn" aria-label="Close details">&times;</button>
+        <div id="drawerBody" class="drawer-body">
+            <!-- Content populates dynamically -->
+        </div>
+    </aside>
+
+    <footer>
+        <p>&copy; Copyright 2026. Created by Iverson Malit.</p>
+    </footer>
+
+    <!-- Interactive Search, Drawer Panel & Load More JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('bookSearchInput');
+            const searchBtn = document.getElementById('searchBtn');
+            const resultsGrid = document.getElementById('searchResultsGrid');
+            const loadMoreBtn = document.getElementById('loadMoreBtn');
+
+            const bookDrawer = document.getElementById('bookDrawer');
+            const drawerOverlay = document.getElementById('drawerOverlay');
+            const closeDrawerBtn = document.getElementById('closeDrawerBtn');
+            const drawerBody = document.getElementById('drawerBody');
+
+            let currentBooksList = [];
+            let displayedCount = 0;
+            const batchSize = 6;
+
+            // Render batch of books into results grid
+            function renderBooks(booksToRender, append = false) {
+                if (!append) {
+                    resultsGrid.innerHTML = '';
+                }
+
+                booksToRender.forEach(book => {
+                    const title = book.title || 'Untitled';
+                    const authors = book.author_name ? book.author_name.join(', ') : 'Unknown Author';
+                    const publishYear = book.first_publish_year ? `First published in ${book.first_publish_year}` : '';
+                    const bookKey = book.key;
+
+                    let thumbnail = '';
+                    if (book.cover_i) {
+                        thumbnail = `https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg`;
+                    }
+
+                    const article = document.createElement('article');
+                    article.className = 'api-book-card clickable-book-card';
+                    article.innerHTML = `
+                        ${thumbnail ? `<img src="${thumbnail}" alt="${title} cover" class="api-book-thumb">` : ''}
+                        <h3>${title}</h3>
+                        <p class="book-author"><strong>Author:</strong> ${authors}</p>
+                        <p>${publishYear ? publishYear : 'Explore this title through Open Library.'}</p>
+                        <span class="card-action">View Details &rarr;</span>
+                    `;
+
+                    // Click event to slide open the side drawer panel
+                    article.addEventListener('click', () => {
+                        openBookDrawer(bookKey, title, authors, publishYear, thumbnail);
+                    });
+
+                    resultsGrid.appendChild(article);
+                });
+
+                // Show or hide Load More button
+                if (displayedCount < currentBooksList.length) {
+                    loadMoreBtn.style.display = 'inline-block';
+                } else {
+                    loadMoreBtn.style.display = 'none';
+                }
+            }
+
+            // Perform Open Library search query
+            async function performSearch() {
+                const query = searchInput.value.trim();
+                if (!query) return;
+
+                resultsGrid.innerHTML = '<p class="loading-text">Searching online catalog...</p>';
+                loadMoreBtn.style.display = 'none';
+
+                try {
+                    const response = await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=50`);
+                    const data = await response.json();
+
+                    if (data.docs && data.docs.length > 0) {
+                        currentBooksList = data.docs;
+                        displayedCount = 0;
+
+                        const nextBatch = currentBooksList.slice(displayedCount, displayedCount + batchSize);
+                        displayedCount += nextBatch.length;
+
+                        renderBooks(nextBatch, false);
+                    } else {
+                        resultsGrid.innerHTML = '<p>No books found matching your search term. Try another search!</p>';
+                        loadMoreBtn.style.display = 'none';
+                    }
+                } catch (error) {
+                    console.error('Error fetching catalog books:', error);
+                    resultsGrid.innerHTML = '<p>Unable to connect to the book database. Please check your internet connection.</p>';
+                    loadMoreBtn.style.display = 'none';
+                }
+            }
+
+            // Slide open the drawer and fetch full description
+            async function openBookDrawer(bookKey, title, authors, publishYear, thumbnail) {
+                bookDrawer.classList.add('open');
+                drawerOverlay.classList.add('open');
+                
+                drawerBody.innerHTML = `
+                    <div class="drawer-loading">
+                        ${thumbnail ? `<img src="${thumbnail}" alt="${title}" class="drawer-thumb">` : ''}
+                        <h2>${title}</h2>
+                        <p class="book-author"><strong>Author:</strong> ${authors}</p>
+                        <p class="drawer-year">${publishYear}</p>
+                        <p class="loading-desc">Loading full description from library database...</p>
+                    </div>
+                `;
+
+                let descriptionText = "No detailed description available for this book.";
+
+                if (bookKey) {
+                    try {
+                        const response = await fetch(`https://openlibrary.org${bookKey}.json`);
+                        const data = await response.json();
+
+                        if (data.description) {
+                            if (typeof data.description === 'string') {
+                                descriptionText = data.description;
+                            } else if (data.description.value) {
+                                descriptionText = data.description.value;
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error fetching book description:', error);
+                    }
+                }
+
+                const formattedDesc = descriptionText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+                drawerBody.innerHTML = `
+                    <div class="drawer-details">
+                        ${thumbnail ? `<img src="${thumbnail}" alt="${title}" class="drawer-thumb">` : ''}
+                        <h2>${title}</h2>
+                        <p class="book-author"><strong>Author:</strong> ${authors}</p>
+                        <p class="drawer-year"><em>${publishYear}</em></p>
+                        <hr class="drawer-divider">
+                        <h3>About this book</h3>
+                        <div class="drawer-description">${formattedDesc}</div>
+                    </div>
+                `;
+            }
+
+            // Close side drawer
+            function closeDrawer() {
+                bookDrawer.classList.remove('open');
+                drawerOverlay.classList.remove('open');
+            }
+
+            closeDrawerBtn.addEventListener('click', closeDrawer);
+            drawerOverlay.addEventListener('click', closeDrawer);
+
+            // Event Listeners for Search & Load More
+            searchBtn.addEventListener('click', performSearch);
+            
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+
+            loadMoreBtn.addEventListener('click', () => {
+                const nextBatch = currentBooksList.slice(displayedCount, displayedCount + batchSize);
+                displayedCount += nextBatch.length;
+                renderBooks(nextBatch, true);
+            });
+
+            // Default initial search so the page isn't empty on load
+            searchInput.value = 'Bestseller';
+            performSearch();
+        });
+    </script>
+</body>
+</html>

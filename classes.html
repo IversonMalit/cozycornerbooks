@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cozy Corner Books | Classes</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="site-header">
+        <img src="img/Logo.jpeg" alt="Cozy Corner Books logo" class="logo">
+        <div class="header-text">
+            <span class="eyebrow">Independent Bookstore</span>
+            <h1>Reading Classes</h1>
+            <p>Make space for curiosity, creativity, and a good story.</p>
+        </div>
+    </header>
+
+    <nav class="main-nav" aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="about.html">About Us</a>
+        <a href="books.html">Books</a>
+        <a href="genres.html">Genres</a>
+        <a href="classes.html" class="active">Classes</a>
+        <a href="contact.html">Contact Us</a>
+    </nav>
+
+    <main>
+        <section class="content-panel classes-panel">
+            <img src="img/library2.jfif" alt="Readers learning together in a library" class="classes-banner">
+
+            <h2>Workshops Designed for Every Reader</h2>
+            <p class="intro-copy">Join a welcoming class at Cozy Corner Books and discover new ways to read, write, and share stories with our community.</p>
+
+            <h2 class="section-heading">Class Schedule</h2>
+            <div class="schedule-wrap">
+                <table class="schedule-table">
+                    <caption>Upcoming reading and writing classes</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Class</th>
+                            <th scope="col">Days</th>
+                            <th scope="col">Time</th>
+                            <th scope="col">Instructor</th>
+                            <th scope="col">Room</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Book Club Basics</td>
+                            <td>Monday, Wednesday</td>
+                            <td>10:00 AM</td>
+                            <td>Maria Santos</td>
+                            <td>Reading Room</td>
+                        </tr>
+                        <tr>
+                            <td>Creative Writing Workshop</td>
+                            <td>Tuesday, Thursday</td>
+                            <td>2:00 PM</td>
+                            <td>Daniel Cruz</td>
+                            <td>Study Room</td>
+                        </tr>
+                        <tr>
+                            <td>Young Readers' Circle</td>
+                            <td>Saturday</td>
+                            <td>10:00 AM</td>
+                            <td>Ms. Reyes</td>
+                            <td>Children's Corner</td>
+                        </tr>
+                        <tr>
+                            <td>Poetry and Prose</td>
+                            <td>Sunday</td>
+                            <td>2:00 PM</td>
+                            <td>Maria Santos</td>
+                            <td>Reading Room</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h2 class="section-heading">Register for a Class</h2>
+            <form class="registration-form" action="#" method="post">
+                <fieldset>
+                    <legend>Reader Information</legend>
+                    <label for="first-name">First Name</label>
+                    <input type="text" id="first-name" name="first-name" required>
+                    
+                    <label for="last-name">Last Name</label>
+                    <input type="text" id="last-name" name="last-name" required>
+                    
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                    
+                    <label for="phone">Phone</label>
+                    <input type="tel" id="phone" name="phone">
+                </fieldset>
+
+                <fieldset>
+                    <legend>Class Preferences</legend>
+                    <label for="class-choice">Choose a class</label>
+                    <select id="class-choice" name="class-choice" required>
+                        <option value="">Select a class</option>
+                        <option>Book Club Basics</option>
+                        <option>Creative Writing Workshop</option>
+                        <option>Young Readers' Circle</option>
+                        <option>Poetry and Prose</option>
+                    </select>
+                    
+                    <span class="form-label">I would like more information about:</span>
+                    <label class="checkbox-label"><input type="checkbox" name="interest" value="book-club"> Book clubs</label>
+                    <label class="checkbox-label"><input type="checkbox" name="interest" value="writing"> Writing workshops</label>
+                    <label class="checkbox-label"><input type="checkbox" name="interest" value="young-readers"> Children's programs</label>
+                </fieldset>
+
+                <fieldset class="full-width-fieldset">
+                    <legend>Additional Details</legend>
+                    <label for="referral">How did you find us?</label>
+                    <select id="referral" name="referral">
+                        <option>Our bookstore</option>
+                        <option>Friend or family</option>
+                        <option>Social media</option>
+                        <option>Search engine</option>
+                    </select>
+                    
+                    <label for="questions">Questions or preferred schedule</label>
+                    <textarea id="questions" name="questions" rows="5"></textarea>
+                </fieldset>
+
+                <button type="submit" class="submit-button">Submit Registration</button>
+            </form>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; Copyright 2026. All Rights Reserved. Created by Iverson Malit.</p>
+        <a href="index.html">cozycornerbooks.com</a>
+    </footer>
+</body>
+</html>

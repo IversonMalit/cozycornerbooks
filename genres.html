@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cozy Corner Books | Genres</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="site-header">
+        <img src="img/Logo.jpeg" alt="Cozy Corner Books logo" class="logo">
+        <div class="header-text">
+            <span class="eyebrow">Independent Bookstore</span>
+            <h1>Genres</h1>
+            <p>Browse stories by mood, interest, and imagination.</p>
+        </div>
+    </header>
+
+    <nav class="main-nav" aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="about.html">About Us</a>
+        <a href="books.html">Books</a>
+        <a href="genres.html" class="active">Genres</a>
+        <a href="classes.html">Classes</a>
+        <a href="contact.html">Contact Us</a>
+    </nav>
+
+    <main>
+        <section class="content-panel">
+            <h2>Explore by Genre</h2>
+            <p>Select multiple genre tags below to combine interests, or type any custom topic to search our global library database!</p>
+
+            <!-- Genre Search Bar Component -->
+            <div class="search-container">
+                <label for="genreFilterInput" class="search-label">Filter or Search Custom Genre</label>
+                <div class="search-bar-wrapper">
+                    <input type="search" id="genreFilterInput" class="book-search-input" placeholder="Type a genre (e.g. Fashion, Cyberpunk, Mythology)..." aria-label="Filter or search genre">
+                    <button type="button" id="customGenreBtn" class="button-link search-submit-btn">Search Topic</button>
+                </div>
+            </div>
+
+            <!-- Compact Genre Pills Grid -->
+            <div class="genre-pills-container" id="pillsContainer">
+                <button class="genre-pill" data-genre="fiction">Fiction</button>
+                <button class="genre-pill" data-genre="mystery">Mystery</button>
+                <button class="genre-pill" data-genre="fantasy">Fantasy</button>
+                <button class="genre-pill" data-genre="romance">Romance</button>
+                <button class="genre-pill" data-genre="science fiction">Science Fiction</button>
+                <button class="genre-pill" data-genre="thriller">Thriller & Suspense</button>
+                <button class="genre-pill" data-genre="horror">Horror</button>
+                <button class="genre-pill" data-genre="young adult">Young Adult</button>
+                <button class="genre-pill" data-genre="historical fiction">Historical Fiction</button>
+                <button class="genre-pill" data-genre="graphic novels">Graphic Novels</button>
+                <button class="genre-pill" data-genre="manga">Manga</button>
+                <button class="genre-pill" data-genre="childrens books">Children's Books</button>
+                <button class="genre-pill" data-genre="biography">Memoir & Biography</button>
+                <button class="genre-pill" data-genre="poetry">Poetry & Essays</button>
+                <button class="genre-pill" data-genre="philosophy">Philosophy</button>
+                <button class="genre-pill" data-genre="psychology">Psychology</button>
+                <button class="genre-pill" data-genre="history">History</button>
+                <button class="genre-pill" data-genre="cookbooks">Food & Cooking</button>
+                <button class="genre-pill" data-genre="classics">Classics</button>
+                <button class="genre-pill" data-genre="non fiction">Non-Fiction</button>
+            </div>
+        </section>
+
+        <!-- Dynamic Recommendations Section -->
+        <section class="content-panel" id="recommendationsPanel" style="display: none;">
+            <h2 id="recommendationTitle">Recommended Books</h2>
+            <div class="card-grid" id="genreResultsGrid">
+                <!-- Recommendations render here -->
+            </div>
+            <div class="load-more-container" style="text-align: center; margin-top: 28px;">
+                <button id="loadMoreBtn" class="button-link" style="display: none;">Load More Books</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Side Drawer Overlay and Panel -->
+    <div id="drawerOverlay" class="drawer-overlay"></div>
+    <aside id="bookDrawer" class="book-drawer" aria-label="Book Details">
+        <button id="closeDrawerBtn" class="drawer-close-btn" aria-label="Close details">&times;</button>
+        <div id="drawerBody" class="drawer-body">
+            <!-- Content populates dynamically -->
+        </div>
+    </aside>
+
+    <footer>
+        <p>&copy; Copyright 2026. Created by Iverson Malit[cite: 5].</p>
+    </footer>
+
+    <!-- Interactive JavaScript with Immediate Custom Pill Creation -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const pillsContainer = document.getElementById('pillsContainer');
+            const genreFilterInput = document.getElementById('genreFilterInput');
+            const customGenreBtn = document.getElementById('customGenreBtn');
+            
+            const recPanel = document.getElementById('recommendationsPanel');
+            const recTitle = document.getElementById('recommendationTitle');
+            const resultsGrid = document.getElementById('genreResultsGrid');
+            const loadMoreBtn = document.getElementById('loadMoreBtn');
+            
+            const bookDrawer = document.getElementById('bookDrawer');
+            const drawerOverlay = document.getElementById('drawerOverlay');
+            const closeDrawerBtn = document.getElementById('closeDrawerBtn');
+            const drawerBody = document.getElementById('drawerBody');
+
+            let currentBooksList = [];
+            let displayedCount = 0;
+            const batchSize = 6;
+            let dynamicPill = null;
+
+            // Live Filter + Instant Dynamic Custom Pill
+            genreFilterInput.addEventListener('input', (e) => {
+                const query = e.target.value.trim();
+                const lowerQuery = query.toLowerCase();
+                const staticPills = pillsContainer.querySelectorAll('.genre-pill:not(.custom-dynamic)');
+
+                let matchFound = false;
+
+                staticPills.forEach(pill => {
+                    const text = pill.textContent.toLowerCase();
+                    if (lowerQuery === '' || text.includes(lowerQuery)) {
+                        pill.style.display = '';
+                        if (text.includes(lowerQuery) && lowerQuery !== '') matchFound = true;
+                    } else {
+                        pill.style.display = 'none';
+                    }
+                });
+
+                // If user typed something that doesn't match an existing pill, show a custom dynamic pill immediately!
+                if (query !== '' && !matchFound) {
+                    if (!dynamicPill) {
+                        dynamicPill = document.createElement('button');
+                        dynamicPill.className = 'genre-pill custom-dynamic active';
+                        dynamicPill.addEventListener('click', () => {
+                            dynamicPill.classList.toggle('active');
+                            fetchCombinedRecommendations();
+                        });
+                        pillsContainer.prepend(dynamicPill);
+                    }
+                    dynamicPill.setAttribute('data-genre', lowerQuery);
+                    dynamicPill.textContent = `+ Search "${query}"`;
+                    dynamicPill.style.display = '';
+                } else if (dynamicPill && (query === '' || matchFound)) {
+                    dynamicPill.style.display = 'none';
+                }
+            });
+
+            // Trigger Custom Search on Button Click or Enter
+            function handleCustomGenreSearch() {
+                const query = genreFilterInput.value.trim();
+                if (!query) return;
+
+                let targetPill = Array.from(document.querySelectorAll('.genre-pill')).find(
+                    p => p.textContent.toLowerCase().includes(query.toLowerCase())
+                );
+
+                if (!targetPill) {
+                    targetPill = document.createElement('button');
+                    targetPill.className = 'genre-pill active';
+                    targetPill.setAttribute('data-genre', query.toLowerCase());
+                    targetPill.textContent = query;
+                    
+                    targetPill.addEventListener('click', () => {
+                        targetPill.classList.toggle('active');
+                        fetchCombinedRecommendations();
+                    });
+
+                    pillsContainer.prepend(targetPill);
+                } else {
+                    targetPill.classList.add('active');
+                    targetPill.style.display = '';
+                }
+
+                if (dynamicPill) {
+                    dynamicPill.remove();
+                    dynamicPill = null;
+                }
+
+                document.querySelectorAll('.genre-pill').forEach(p => p.style.display = '');
+                genreFilterInput.value = '';
+                fetchCombinedRecommendations();
+            }
+
+            customGenreBtn.addEventListener('click', handleCustomGenreSearch);
+            genreFilterInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    handleCustomGenreSearch();
+                }
+            });
+
+            function renderBooks(booksToRender, append = false) {
+                if (!append) {
+                    resultsGrid.innerHTML = '';
+                }
+
+                booksToRender.forEach(book => {
+                    const title = book.title || 'Untitled';
+                    const authors = book.author_name ? book.author_name.join(', ') : 'Unknown Author';
+                    const publishYear = book.first_publish_year ? `First published in ${book.first_publish_year}` : '';
+                    const bookKey = book.key;
+
+                    let thumbnail = '';
+                    if (book.cover_i) {
+                        thumbnail = `https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg`;
+                    }
+
+                    const article = document.createElement('article');
+                    article.className = 'api-book-card clickable-book-card';
+                    article.innerHTML = `
+                        ${thumbnail ? `<img src="${thumbnail}" alt="${title} cover" class="api-book-thumb">` : ''}
+                        <h3>${title}</h3>
+                        <p class="book-author"><strong>Author:</strong> ${authors}</p>
+                        <p>${publishYear ? publishYear : 'Explore this title.'}</p>
+                        <span class="card-action">View Details &rarr;</span>
+                    `;
+
+                    article.addEventListener('click', () => {
+                        openBookDrawer(bookKey, title, authors, publishYear, thumbnail);
+                    });
+
+                    resultsGrid.appendChild(article);
+                });
+
+                if (displayedCount < currentBooksList.length) {
+                    loadMoreBtn.style.display = 'inline-block';
+                } else {
+                    loadMoreBtn.style.display = 'none';
+                }
+            }
+
+            async function openBookDrawer(bookKey, title, authors, publishYear, thumbnail) {
+                bookDrawer.classList.add('open');
+                drawerOverlay.classList.add('open');
+                
+                drawerBody.innerHTML = `
+                    <div class="drawer-loading">
+                        ${thumbnail ? `<img src="${thumbnail}" alt="${title}" class="drawer-thumb">` : ''}
+                        <h2>${title}</h2>
+                        <p class="book-author"><strong>Author:</strong> ${authors}</p>
+                        <p class="drawer-year">${publishYear}</p>
+                        <p class="loading-desc">Loading full description from library database...</p>
+                    </div>
+                `;
+
+                let descriptionText = "No detailed description available for this book.";
+
+                if (bookKey) {
+                    try {
+                        const response = await fetch(`https://openlibrary.org${bookKey}.json`);
+                        const data = await response.json();
+
+                        if (data.description) {
+                            if (typeof data.description === 'string') {
+                                descriptionText = data.description;
+                            } else if (data.description.value) {
+                                descriptionText = data.description.value;
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error fetching book description:', error);
+                    }
+                }
+
+                const formattedDesc = descriptionText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+                drawerBody.innerHTML = `
+                    <div class="drawer-details">
+                        ${thumbnail ? `<img src="${thumbnail}" alt="${title}" class="drawer-thumb">` : ''}
+                        <h2>${title}</h2>
+                        <p class="book-author"><strong>Author:</strong> ${authors}</p>
+                        <p class="drawer-year"><em>${publishYear}</em></p>
+                        <hr class="drawer-divider">
+                        <h3>About this book</h3>
+                        <div class="drawer-description">${formattedDesc}</div>
+                    </div>
+                `;
+            }
+
+            function closeDrawer() {
+                bookDrawer.classList.remove('open');
+                drawerOverlay.classList.remove('open');
+            }
+
+            closeDrawerBtn.addEventListener('click', closeDrawer);
+            drawerOverlay.addEventListener('click', closeDrawer);
+
+            async function fetchCombinedRecommendations() {
+                const activePills = document.querySelectorAll('.genre-pill.active');
+                
+                if (activePills.length === 0) {
+                    recPanel.style.display = 'none';
+                    loadMoreBtn.style.display = 'none';
+                    return;
+                }
+
+                recPanel.style.display = 'block';
+                
+                const genreNames = Array.from(activePills).map(p => p.textContent.replace('+ Search ', '').replace(/"/g, ''));
+                recTitle.textContent = `Recommended Books for: ${genreNames.join(' + ')}`;
+                resultsGrid.innerHTML = '<p class="loading-text">Finding randomized book recommendations...</p>';
+                loadMoreBtn.style.display = 'none';
+
+                recPanel.scrollIntoView({ behavior: 'smooth' });
+
+                try {
+                    const queryParts = Array.from(activePills).map(p => `subject:${p.getAttribute('data-genre')}`);
+                    const combinedQuery = queryParts.join(' ');
+
+                    const response = await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(combinedQuery)}&limit=50`);
+                    const data = await response.json();
+
+                    if (data.docs && data.docs.length > 0) {
+                        currentBooksList = data.docs.sort(() => 0.5 - Math.random());
+                        displayedCount = 0;
+
+                        const nextBatch = currentBooksList.slice(displayedCount, displayedCount + batchSize);
+                        displayedCount += nextBatch.length;
+
+                        renderBooks(nextBatch, false);
+                    } else {
+                        resultsGrid.innerHTML = '<p>No books found matching this specific combination. Try mixing different genres!</p>';
+                        loadMoreBtn.style.display = 'none';
+                    }
+                } catch (error) {
+                    console.error('Error fetching genre books:', error);
+                    resultsGrid.innerHTML = '<p>Unable to connect to the book database. Please check your internet connection.</p>';
+                    loadMoreBtn.style.display = 'none';
+                }
+            }
+
+            document.querySelectorAll('.genre-pill').forEach(pill => {
+                pill.addEventListener('click', () => {
+                    pill.classList.toggle('active');
+                    fetchCombinedRecommendations();
+                });
+            });
+
+            loadMoreBtn.addEventListener('click', () => {
+                const nextBatch = currentBooksList.slice(displayedCount, displayedCount + batchSize);
+                displayedCount += nextBatch.length;
+                renderBooks(nextBatch, true);
+            });
+        });
+    </script>
+</body>
+</html>
